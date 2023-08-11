@@ -30,7 +30,7 @@ aqua_raw_list <- split(aqua, f = aqua$uniqueid)
 aquacurvenames <- names(aqua_raw_list)
 #Batch calibration with normal algorithm
 aqua_corr_list <- racircalbatch(caldata = empty, data = aqua_raw_list,
-                        mincut = 350, maxcut = 780, title = aquacurvenames)
+                        mincut = 230, maxcut = 1205, title = aquacurvenames)
 
 #merge all data frames in list
 aqua_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), aqua_corr_list)
@@ -40,7 +40,7 @@ soil_raw_list <- split(soil, f = soil$uniqueid)
 soilcurvenames <- names(soil_raw_list)
 #Batch calibration with normal algorithm
 soil_corr_list <- racircalbatch(caldata = empty, data = soil_raw_list,
-                           mincut = 350, maxcut = 780, title = soilcurvenames)
+                           mincut = 230, maxcut = 12050, title = soilcurvenames)
 
 #merge all data frames in list
 soil_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), soil_corr_list)
@@ -48,7 +48,7 @@ soil_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), soil_corr_list)
 ##load package for plant physiology data
 library(photosynthesis)
 
-##batch aci fits for aqua week 1---------
+##batch aci fits for aqua week 2---------
 aqua_ids <- orderc("aqua-3", "aqua-6", "aqua-12", "aqua-14", "aqua-19")
 
 aquafits <- fit_many(data=aqua_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
@@ -61,10 +61,10 @@ aquafits_pars <- compile_data(aquafits,
                               list_element = 1)
 aquafits_pars$id <- aqua_ids
 
-write.csv(aquafits_pars, file="aci_parameters/aquafits_week1.csv", row.names=FALSE)
+write.csv(aquafits_pars, file="aci_parameters/aquafits_week2.csv", row.names=FALSE)
 
 
-##batch aci fits for soil week 1-------
+##batch aci fits for soil week 2-------
 soil_ids <- c("soil-2", "soil-4", "soil-7", "soil-9", "soil-19")
 
 soilfits <- fit_many(data=soil_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
@@ -77,7 +77,7 @@ soilfits_pars <- compile_data(soilfits,
                               list_element = 1)
 soilfits_pars$id <- soil_ids
 
-write.csv(soilfits_pars, file="aci_parameters/soilfits_week1.csv", row.names=FALSE)
+write.csv(soilfits_pars, file="aci_parameters/soilfits_week2.csv", row.names=FALSE)
 
 
 

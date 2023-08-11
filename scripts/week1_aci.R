@@ -77,6 +77,7 @@ soil_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), soil_list)
 
 ##load package for plant physiology data
 library(photosynthesis)
+library(purrr)
 
 ##batch aci fits for aqua week 1---------
 aqua_ids <- c("aqua-3", "aqua-8", "aqua-13", "aqua-17", "aqua-19")
@@ -85,6 +86,13 @@ aquafits <- fit_many(data=aqua_corr, varnames=list(A_net = "Acor",T_leaf = "T_le
                                                    C_i = "Cicor", PPFD = "Qin", 
                                                    g_mc = "g_mc"), func=fit_aci_response,
                                                   group="uniqueid")
+
+
+fits = aqua_corr |>
+  split(~ uniqueid) |>
+  map(fit_photosynthesis, .photo_fun = "fit_aci_response", .vars = list(A_net = "Acor",T_leaf = "T_leaf",
+                                                                   C_i = "Cicor", PPFD = "Qin", 
+                                                                   g_mc = "g_mc"), .progress=TRUE)
 
 aquafits_pars <- compile_data(aquafits,
                           output_type = "dataframe",
@@ -112,26 +120,26 @@ write.csv(soilfits_pars, file="aci_parameters/soilfits_week1.csv", row.names=FAL
 ###not used below (yet)--------
 #run aci curve, note the varnames function to pick the correct (and corrected) variables
 #takes about a few min to run
-fit_aci_response(aqua3_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                            C_i = "Cicor", PPFD = "Qin", g_mc = "g_mc"))
+# fit_aci_response(aqua3_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
+#                                             C_i = "Cicor", PPFD = "Qin", g_mc = "g_mc"))
+# 
+# fit_aci_response(soil5_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
+#                                            C_i = "Cicor", PPFD = "Qin", g_mc = "g_mc"))
 
-fit_aci_response(soil5_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                           C_i = "Cicor", PPFD = "Qin", g_mc = "g_mc"))
-
-
-##batch calibration for aqua
-#Create a list of files
-files <- c(system.file("extdata", "poplar_1", package = "racir"),
-           system.file("extdata", "poplar_2", package = "racir"))
-data <- vector("list", length(files))
-for(i in seq_along(files)){
-  data[[i]] <- read_6800(files[i])
-  names(data)[i] <- files[i]
-}
-
-caldata <- read_6800(system.file("extdata", "cal", package = "racir"))
-
-#Batch calibration with normal algorithm
-output <- racircalbatch(caldata = caldata, data = data,
-                        mincut = 350, maxcut = 780, title = files)
+# 
+# ##batch calibration for aqua
+# #Create a list of files
+# files <- c(system.file("extdata", "poplar_1", package = "racir"),
+#            system.file("extdata", "poplar_2", package = "racir"))
+# data <- vector("list", length(files))
+# for(i in seq_along(files)){
+#   data[[i]] <- read_6800(files[i])
+#   names(data)[i] <- files[i]
+# }
+# 
+# caldata <- read_6800(system.file("extdata", "cal", package = "racir"))
+# 
+# #Batch calibration with normal algorithm
+# output <- racircalbatch(caldata = caldata, data = data,
+#                         mincut = 350, maxcut = 780, title = files)
                                             
