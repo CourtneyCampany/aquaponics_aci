@@ -16,11 +16,12 @@ aqua$uniqueid <- as.factor(with(aqua, paste(treatment, replicate, sep="-")))
 soil$uniqueid <- as.factor(with(soil, paste(treatment, replicate, sep="-")))
 
 ##test and pick cutoffs for each treatments empty chamber
-racircalcheck(data = empty, mincut= 230, maxcut = 1205)
+racircalcheck(data = empty)
+racircalcheck(data = empty, mincut= 225, maxcut = 1205)
 
 unique(aqua$uniqueid)
 #test
-test <- racircal(data = aqua[aqua$uniqueid == "aqua-14",], caldata = empty,
+test <- racircal(data = aqua[aqua$uniqueid == "aqua-3",], caldata = empty,
                        mincut = 200, maxcut = 1205)
 
 #aqua14 and soil 9 are messed up
@@ -30,7 +31,7 @@ aqua_raw_list <- split(aqua, f = aqua$uniqueid)
 aquacurvenames <- names(aqua_raw_list)
 #Batch calibration with normal algorithm
 aqua_corr_list <- racircalbatch(caldata = empty, data = aqua_raw_list,
-                        mincut = 230, maxcut = 1205, title = aquacurvenames)
+                        mincut = 225, maxcut = 1205, title = aquacurvenames)
 
 #merge all data frames in list
 aqua_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), aqua_corr_list)
@@ -40,44 +41,51 @@ soil_raw_list <- split(soil, f = soil$uniqueid)
 soilcurvenames <- names(soil_raw_list)
 #Batch calibration with normal algorithm
 soil_corr_list <- racircalbatch(caldata = empty, data = soil_raw_list,
-                           mincut = 230, maxcut = 12050, title = soilcurvenames)
+                           mincut = 225, maxcut = 1205, title = soilcurvenames)
 
 #merge all data frames in list
 soil_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), soil_corr_list)
 
 ##load package for plant physiology data
+library(dplyr)
 library(photosynthesis)
+library(purrr)
 
 ##batch aci fits for aqua week 2---------
-aqua_ids <- orderc("aqua-3", "aqua-6", "aqua-12", "aqua-14", "aqua-19")
+aqua_corr2 <- aqua_corr %>% 
+  rename(A_net = "Acor", C_i = "Cicor", PPFD = "Qin")
 
-aquafits <- fit_many(data=aqua_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                   g_mc = "g_mc"), func=fit_aci_response,
-                     group="uniqueid")
+##
 
-aquafits_pars <- compile_data(aquafits,
-                              output_type = "dataframe",
-                              list_element = 1)
-aquafits_pars$id <- aqua_ids
+#remove empty chamber factor levels
+aqua_corr3 <- droplevels(aqua_corr2[!aqua_corr2$uniqueid == "aqua-14",])
 
-write.csv(aquafits_pars, file="aci_parameters/aquafits_week2.csv", row.names=FALSE)
+fits_aqua = aqua_corr3 |>
+  split(~ uniqueid) |>
+  map(fit_aci_response,  .progress=TRUE)
 
+aquafits_week2 <- compile_data(fits_aqua,
+                               output_type = "dataframe",
+                               list_element = 1)
+
+write.csv(aquafits_week2, file="aci_parameters/aquafits_week2.csv", row.names=FALSE)
 
 ##batch aci fits for soil week 2-------
-soil_ids <- c("soil-2", "soil-4", "soil-7", "soil-9", "soil-19")
+soil_corr2 <- soil_corr %>% 
+  rename(A_net = "Acor", C_i = "Cicor", PPFD = "Qin")
 
-soilfits <- fit_many(data=soil_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                   g_mc = "g_mc"), func=fit_aci_response,
-                     group="uniqueid")
+#remove empty chamber data
+soil_corr3 <- droplevels(soil_corr2)
 
-soilfits_pars <- compile_data(soilfits,
-                              output_type = "dataframe",
-                              list_element = 1)
-soilfits_pars$id <- soil_ids
+fits_soil = soil_corr3 |>
+  split(~ uniqueid) |>
+  map(fit_aci_response,  .progress=TRUE)
 
-write.csv(soilfits_pars, file="aci_parameters/soilfits_week2.csv", row.names=FALSE)
+soilfits_week2 <- compile_data(fits_soil,
+                               output_type = "dataframe",
+                               list_element = 1)
+
+write.csv(soilfits_week2, file="aci_parameters/soilfits_week2.csv", row.names=FALSE)
 
 
 

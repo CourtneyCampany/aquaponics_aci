@@ -38,36 +38,23 @@ aqua_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), aqua_corr_list)
 ##load package for plant physiology data
 library(photosynthesis)
 
-##batch aci fits for aqua week 2---------
-aqua_ids <- orderc("aqua-3", "aqua-6", "aqua-12", "aqua-14", "aqua-19")
+##batch aci fits for aqua week 3---------
+aqua_corr2 <- aqua_corr %>% 
+  rename(A_net = "Acor", C_i = "Cicor", PPFD = "Qin")
 
-aquafits <- fit_many(data=aqua_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                   g_mc = "g_mc"), func=fit_aci_response,
-                     group="uniqueid")
+#remove empty chamber data
+aqua_corr3 <- droplevels(aqua_corr2)
 
-aquafits_pars <- compile_data(aquafits,
-                              output_type = "dataframe",
-                              list_element = 1)
-aquafits_pars$id <- aqua_ids
+fits_aqua = aqua_corr3 |>
+  split(~ uniqueid) |>
+  map(fit_aci_response,  .progress=TRUE)
 
-write.csv(aquafits_pars, file="aci_parameters/aquafits_week2.csv", row.names=FALSE)
+aquafits_week3 <- compile_data(fits_aqua,
+                               output_type = "dataframe",
+                               list_element = 1)
 
 
-##batch aci fits for soil week 2-------
-soil_ids <- c("soil-2", "soil-4", "soil-7", "soil-9", "soil-19")
-
-soilfits <- fit_many(data=soil_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                   g_mc = "g_mc"), func=fit_aci_response,
-                     group="uniqueid")
-
-soilfits_pars <- compile_data(soilfits,
-                              output_type = "dataframe",
-                              list_element = 1)
-soilfits_pars$id <- soil_ids
-
-write.csv(soilfits_pars, file="aci_parameters/soilfits_week2.csv", row.names=FALSE)
+write.csv(aquafits_week3, file="aci_parameters/aquafits_week3.csv", row.names=FALSE)
 
 
 

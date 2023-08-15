@@ -18,7 +18,7 @@ caltest_aqua <- aqua[aqua$treatment == 'empty',]
 caltest_soil <- soil[soil$treatment == 'empty',]
 
 ##test and pick cutoffs for each treatments empty chamber
-racircalcheck(data = caltest_aqua, mincut=200,maxcut = 1205)
+racircalcheck(data = caltest_aqua, mincut=180,maxcut = 1205)
 racircalcheck(data = caltest_soil, mincut=55,maxcut = 1205)
 
 #extract and correct each curve from each treatment
@@ -28,19 +28,19 @@ racircalcheck(data = caltest_soil, mincut=55,maxcut = 1205)
 unique(aqua$uniqueid)
 #corrected curve using aqua empty fix
 aqua3_corr <- racircal(data = aqua[aqua$uniqueid == "aqua-3",], caldata = caltest_aqua,
-                        mincut = 200, maxcut = 1205)
+                        mincut = 180, maxcut = 1205)
 
 aqua8_corr <- racircal(data = aqua[aqua$uniqueid == "aqua-8",], caldata = caltest_aqua,
-                       mincut = 200, maxcut = 1205)
+                       mincut = 180, maxcut = 1205)
 
 aqua13_corr <- racircal(data = aqua[aqua$uniqueid == "aqua-13",], caldata = caltest_aqua,
-                       mincut = 200, maxcut = 1205)
+                       mincut = 180, maxcut = 1205)
 
 aqua17_corr <- racircal(data = aqua[aqua$uniqueid == "aqua-17",], caldata = caltest_aqua,
-                       mincut = 200, maxcut = 1205)
+                       mincut = 180, maxcut = 1205)
 
 aqua19_corr <- racircal(data = aqua[aqua$uniqueid == "aqua-19",], caldata = caltest_aqua,
-                       mincut = 200, maxcut = 1205)
+                       mincut = 180, maxcut = 1205)
 
 #merge all corrected dataframes
 #put all data frames into list
@@ -54,19 +54,21 @@ aqua_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), aqua_list)
 unique(soil$uniqueid)
 
 soil5_corr <- racircal(data = soil[soil$uniqueid == "soil-5",], caldata = caltest_aqua,
-                       mincut = 200, maxcut = 1205)
+                       mincut = 55, maxcut = 1205)
 
 soil3_corr <- racircal(data = soil[soil$uniqueid == "soil-3",], caldata = caltest_aqua,
-                       mincut = 200, maxcut = 1205)
+                       mincut = 55, maxcut = 1205)
 
 soil9_corr <- racircal(data = soil[soil$uniqueid == "soil-9",], caldata = caltest_aqua,
-                        mincut = 200, maxcut = 1205)
+                        mincut = 55, maxcut = 1205)
 
 soil10_corr <- racircal(data = soil[soil$uniqueid == "soil-10",], caldata = caltest_aqua,
                         mincut = 200, maxcut = 1205)
 
 soil20_corr <- racircal(data = soil[soil$uniqueid == "soil-20",], caldata = caltest_aqua,
-                        mincut = 200, maxcut = 1205)
+                        mincut = 55, maxcut = 1205)
+
+##soil 5 is probably bad
 
 #merge all corrected dataframes
 #put all data frames into list
@@ -76,70 +78,42 @@ soil_list <- list(soil5_corr, soil3_corr, soil9_corr, soil10_corr, soil20_corr)
 soil_corr <- Reduce(function(x, y) merge(x, y, all=TRUE), soil_list)
 
 ##load package for plant physiology data
+library(dplyr)
 library(photosynthesis)
 library(purrr)
 
 ##batch aci fits for aqua week 1---------
-aqua_ids <- c("aqua-3", "aqua-8", "aqua-13", "aqua-17", "aqua-19")
+aqua_corr2 <- aqua_corr %>% 
+              rename(A_net = "Acor", C_i = "Cicor", PPFD = "Qin")
 
-aquafits <- fit_many(data=aqua_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                   g_mc = "g_mc"), func=fit_aci_response,
-                                                  group="uniqueid")
+#remove empty chamber data
+aqua_corr3 <- droplevels(aqua_corr2)
 
-
-fits = aqua_corr |>
+fits_aqua = aqua_corr3 |>
   split(~ uniqueid) |>
-  map(fit_photosynthesis, .photo_fun = "fit_aci_response", .vars = list(A_net = "Acor",T_leaf = "T_leaf",
-                                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                                   g_mc = "g_mc"), .progress=TRUE)
+  map(fit_aci_response,  .progress=TRUE)
 
-aquafits_pars <- compile_data(aquafits,
-                          output_type = "dataframe",
-                          list_element = 1)
-aquafits_pars$id <- aqua_ids
+aquafits_week1 <- compile_data(fits_aqua,
+                        output_type = "dataframe",
+                         list_element = 1)
 
-write.csv(aquafits_pars, file="aci_parameters/aquafits_week1.csv", row.names=FALSE)
+write.csv(aquafits_week1, file="aci_parameters/aquafits_week1.csv", row.names=FALSE)
 
 
 ##batch aci fits for soil week 1-------
-soil_ids <- c("soil-5", "soil-3", "soil-9", "soil-10", "soil-20")
+soil_corr2 <- soil_corr %>% 
+  rename(A_net = "Acor", C_i = "Cicor", PPFD = "Qin")
 
-soilfits <- fit_many(data=soil_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-                                                   C_i = "Cicor", PPFD = "Qin", 
-                                                   g_mc = "g_mc"), func=fit_aci_response,
-                                                   group="uniqueid")
+#remove empty chamber data
+soil_corr3 <- droplevels(soil_corr2)
 
-soilfits_pars <- compile_data(soilfits,
+fits_soil = soil_corr3 |>
+  split(~ uniqueid) |>
+  map(fit_aci_response,  .progress=TRUE)
+
+soilfits_week1 <- compile_data(fits_soil,
                               output_type = "dataframe",
                               list_element = 1)
-soilfits_pars$id <- soil_ids
 
-write.csv(soilfits_pars, file="aci_parameters/soilfits_week1.csv", row.names=FALSE)
+write.csv(soilfits_week1, file="aci_parameters/soilfits_week1.csv", row.names=FALSE)
 
-###not used below (yet)--------
-#run aci curve, note the varnames function to pick the correct (and corrected) variables
-#takes about a few min to run
-# fit_aci_response(aqua3_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-#                                             C_i = "Cicor", PPFD = "Qin", g_mc = "g_mc"))
-# 
-# fit_aci_response(soil5_corr, varnames=list(A_net = "Acor",T_leaf = "T_leaf",
-#                                            C_i = "Cicor", PPFD = "Qin", g_mc = "g_mc"))
-
-# 
-# ##batch calibration for aqua
-# #Create a list of files
-# files <- c(system.file("extdata", "poplar_1", package = "racir"),
-#            system.file("extdata", "poplar_2", package = "racir"))
-# data <- vector("list", length(files))
-# for(i in seq_along(files)){
-#   data[[i]] <- read_6800(files[i])
-#   names(data)[i] <- files[i]
-# }
-# 
-# caldata <- read_6800(system.file("extdata", "cal", package = "racir"))
-# 
-# #Batch calibration with normal algorithm
-# output <- racircalbatch(caldata = caldata, data = data,
-#                         mincut = 350, maxcut = 780, title = files)
-                                            
