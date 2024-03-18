@@ -5,6 +5,7 @@ sumfun <- function(x, ...){
 
 se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x)))
 mean2 <- function(x) mean(x, na.rm=TRUE)
+sd2 <- function(x) sd(x, na.rm=TRUE)
 
 ###3 functions (fitgam, addpoly, predline, and smooth plot) ----------------------------------------------------------
 

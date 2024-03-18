@@ -11,7 +11,7 @@ boxcols2 <- scales::alpha(boxcols, .6)
 
 pchs=c(15,16,17) #broc, pak, salanova
 
-specieslabs <- c("Broccoli", "Pak Choi", "Salanova")
+specieslabs <- c("Basil", "Lettuce" ,"Wheat Grass")
 
 ratio_lab <- "Root to Shoot ratio"
 biomasslab <- "Total Biomass (g)"
@@ -28,6 +28,8 @@ slalab<- expression(SLA~~(mm^2~g^-1))
 chlalab<- expression(Chlorophyll~A~~(g~L^-1))
 chlblab <- expression(Chlorophyll~B~~(g~L^-1))
 chltotallab <- expression(Chlorophyll~A+B~~(g~L^-1))
+vcmaxlab <- expression(Vc[max]~~(mu*mol~m^-2~s^-1))
+jmaxlab <- expression(J[max]~~(mu*mol~m^-2~s^-1))
 
 treelab <- c( "Shoots", "Roots")
 
