@@ -30,5 +30,7 @@ basil_ttest_sd <- t.test(basilaqua$sd_mm2, basilsoil$sd_mm2,
 wheataqua <- sd[sd$species == "wheat" & sd$treatment == "aqua",]
 wheatsoil <- sd[sd$species == "wheat" & sd$treatment == "soil",]
 
-wheat_ttest_photo <- t.test(wheataqua$sd_mm2, wheatsoil$sd_mm2, 
+wheat_ttest_sd <- t.test(wheataqua$sd_mm2, wheatsoil$sd_mm2, 
                             alternative = "two.sided")
+
+##aqua and soil differ (p < 0.001)
