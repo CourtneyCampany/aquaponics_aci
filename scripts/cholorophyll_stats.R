@@ -45,8 +45,8 @@ basil_ttest_chlb <- t.test(basilaqua$chlb, basilsoil$chlb,
 
 
 #wheat stats and graphs ----------
-wheataqua <- chloro[chloro$species == "wheat" & chloro$treatment == "aqua",]
-wheatsoil <- chloro[chloro$species == "wheat" & chloro$treatment == "soil",]
+wheataqua <- chloro[chloro$species == "wheatgrass" & chloro$treatment == "aqua",]
+wheatsoil <- chloro[chloro$species == "wheatgrass" & chloro$treatment == "soil",]
 
 wheat_ttest_chl<- t.test(wheataqua$chl_total, wheatsoil$chl_total, 
                             alternative = "two.sided")

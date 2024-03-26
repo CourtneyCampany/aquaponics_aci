@@ -9,9 +9,9 @@ plantcols <- c( "darkgoldenrod4","forestgreen")
 boxcols <- c("white", "grey45")
 boxcols2 <- scales::alpha(boxcols, .6)
 
-pchs=c(15,16,17) #broc, pak, salanova
+pchs=c(21,22,24) #basil, lettuce, wheat
 
-specieslabs <- c("Basil", "Lettuce" ,"Wheat Grass")
+specieslabs <- c("Basil", "Lettuce" ,"Wheatgrass")
 
 ratio_lab <- "Root to Shoot ratio"
 biomasslab <- "Total Biomass (g)"
